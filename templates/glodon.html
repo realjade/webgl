@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block stylesheets %}
+  <link type="text/css" rel="stylesheet" href="{{ '/static/css/apps/glodon.css'|staticurl }}" />
+{% endblock %}
+{% block scripts %}
+  <script src="/static/js/lib/three.min.js"></script>
+  <script src="/static/js/lib/STLLoader.js"></script>
+  <script src="/static/js/lib/Detector.js"></script>
+  <script src="/static/js/lib/stats.min.js"></script>
+  <script src="{{ '/static/js/apps/glodon.js'|staticurl }}"></script>
+{% endblock %}
+{% block mainbody %}
+<div class="center">
+    <div class="main-left">
+      <div id="animate" class="btn">自动播放</div>
+      <div id="unanimate" class="btn">停止播放</div>
+    </div>
+    <div class="main-right">
+    	 <div id="webgl"></div>
+    </div>
+</div>
+{% endblock %}

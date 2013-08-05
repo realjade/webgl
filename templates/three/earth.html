@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block stylesheets %}
+  <link type="text/css" rel="stylesheet" href="{{ '/static/css/apps/index.css'|staticurl }}" />
+{% endblock %}
+{% block scripts %}
+  <script src="{{ '/static/js/lib/map/EventWrapper.js'|staticurl }}"></script>
+  <script src="{{ '/static/js/lib/three.before.js'|staticurl }}"></script>
+  <script src="{{ '/static/js/lib/requestAnimationFrame.js'|staticurl }}"></script>
+  <script src="{{ '/static/js/lib/Tween.js'|staticurl }}"></script>
+  <script src="{{ '/static/js/lib/jquery.mousewheel.js'|staticurl }}"></script>
+  <script src="{{ '/static/js/lib/sim/sim.js'|staticurl }}"></script>
+  <script src="{{ '/static/js/apps/three/earth.js'|staticurl }}"></script>
+{% endblock %}
+{% block mainbody %}
+<div class="center">
+    <div class="main-left">
+        
+    </div>
+    <div class="main-right">
+    	<div id="webgl" style="width:500px;height:500px;background:#000;"></div>
+    </div>
+</div>
+{% endblock %}

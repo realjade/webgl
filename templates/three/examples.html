@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block stylesheets %}
+  <link type="text/css" rel="stylesheet" href="{{ '/static/css/apps/index.css'|staticurl }}" />
+{% endblock %}
+{% block scripts %}
+  <script src="{{ '/static/js/lib/map/EventWrapper.js'|staticurl }}"></script>
+  <script src="{{ '/static/js/lib/three.before.js'|staticurl }}"></script>
+  <script src="{{ '/static/js/lib/requestAnimationFrame.js'|staticurl }}"></script>
+  <script src="{{ '/static/js/lib/Tween.js'|staticurl }}"></script>
+  <script src="{{ '/static/js/lib/jquery.mousewheel.js'|staticurl }}"></script>
+  <script src="{{ '/static/js/lib/sim/sim.js'|staticurl }}"></script>
+  <script src="{{ '/static/js/apps/three/earth.js'|staticurl }}"></script>
+{% endblock %}
+{% block mainbody %}
+{% for path in pathes %}
+  <a href="/{{staticPath}}/{{path}}" target="_blank" style="margin:20px;font-size:14px;">{{ path }}</a><br/>
+{% endfor %}
+{% endblock %}
