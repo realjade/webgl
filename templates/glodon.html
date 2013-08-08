@@ -6,10 +6,13 @@
   <script src="/static/js/lib/threejs/three.js"></script>
   <script src="/static/js/lib/threejs/js/controls/OrbitControls.js"></script>
   <script src="/static/js/lib/threejs/js/controls/EditorControls.js"></script>
+  <script src="/static/js/lib/threejs/js/controls/TrackballControls.js"></script>
   <script src="/static/js/lib/threejs/js/loaders/STLLoader.js"></script>
-  <script src="/static/js/lib/threejs/js/loaders/STLLoader.js"></script>
+  <script src="/static/js/lib/threejs/js/loaders/ColladaLoader.js"></script>
   <script src="/static/js/lib/threejs/Detector.js"></script>
   <script src="/static/js/lib/stats.min.js"></script>
+  <script src="/static/js/lib/svg/jquery.svg.js"></script>
+  <script src="/static/js/lib/svg/jquery.svgdom.js"></script>
   <script src="{{ '/static/js/apps/glodon.js'|staticurl }}"></script>
 {% endblock %}
 {% block mainbody %}
@@ -19,7 +22,7 @@
       <div id="unanimate" class="btn">停止播放</div>
     </div>
     <div class="main-right">
-    	 <div id="webgl"></div>
+    	 <div id="svgbasics"></div>
     </div>
 </div>
 {% endblock %}
