@@ -12,7 +12,17 @@
         <ul class="nav">
           <li class="{{'active'|ifdefault(tab=='index')}}"><a href="/">首页</a></li>
           <li class="{{'active'|ifdefault(tab=='test')}}"><a href="/test/">test</a></li>
-          <li class="{{'active'|ifdefault(tab=='glodon')}}"><a href="/glodon/">glodon</a></li>
+          <li class="{{'active'|ifdefault(tab=='glodon')}} dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">glodon <b class="caret"></b></a>
+            <ul class="dropdown-menu">
+              <li><a href="/glodon/">callada</a></li>
+              <li><a href="/glodon/svg/">svg</a></li>
+              <li class="divider"></li>
+              <li class="nav-header">Nav header</li>
+              <li><a href="#">Separated link</a></li>
+              <li><a href="#">One more separated link</a></li>
+            </ul>
+          </li>
           <li class="{{'active'|ifdefault(tab=='three')}} dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">three <b class="caret"></b></a>
             <ul class="dropdown-menu">

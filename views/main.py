@@ -35,7 +35,11 @@ def three_examples():
 
 @module.route('/glodon/')
 def glodon():
-    return render_template('glodon.html', tab = 'glodon')
+    return render_template('glodon/glodon.html', tab = 'glodon')
+
+@module.route('/glodon/svg/')
+def glodon_svg():
+    return render_template('glodon/svg.html', tab = 'glodon')
 
 @module.route('/glodon/test/')
 def glodon_test():

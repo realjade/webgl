@@ -1,54 +1,3 @@
-
-$(function() {
-	$('#svgbasics').svg({onLoad: drawInitial,loadURL: '/static/svg/test.svg'});
-	$('#rect,#line,#circle,#ellipse').click(drawShape);
-	$('#clear').click(function() {
-		$('#svgbasics').svg('get').clear();
-	});
-	$('#export').click(function() {
-		var xml = $('#svgbasics').svg('get').toSVG();
-		$('#svgexport').html(xml.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
-	});
-});
-
-function drawInitial(svg) {
-	svg.circle(75, 75, 50, {fill: 'none', stroke: 'red', 'stroke-width': 3});
-	var g = svg.group({stroke: 'black', 'stroke-width': 2});
-	svg.line(g, 15, 75, 135, 75);
-	svg.line(g, 75, 15, 75, 135);
-}
-
-var colours = ['purple', 'red', 'orange', 'yellow', 'lime', 'green', 'blue', 'navy', 'black'];
-
-function drawShape() {
-	var shape = this.id;
-	var svg = $('#svgbasics').svg('get');
-	if (shape == 'rect') {
-		svg.rect(random(300), random(200), random(100) + 100, random(100) + 100,
-			{fill: colours[random(9)], stroke: colours[random(9)],
-			'stroke-width': random(5) + 1});
-	}
-	else if (shape == 'line') {
-		svg.line(random(400), random(300), random(400), random(300),
-			{stroke: colours[random(9)], 'stroke-width': random(5) + 1});
-	}
-	else if (shape == 'circle') {
-		svg.circle(random(300) + 50, random(200) + 50, random(80) + 20,
-			{fill: colours[random(9)], stroke: colours[random(9)],
-			'stroke-width': random(5) + 1});
-	}
-	else if (shape == 'ellipse') {
-		svg.ellipse(random(300) + 50, random(200) + 50, random(80) + 20, random(80) + 20,
-			{fill: colours[random(9)], stroke: colours[random(9)],
-			'stroke-width': random(5) + 1});
-	}
-}
-
-function random(range) {
-	return Math.floor(Math.random() * range);
-}
-
-
 $(function(){
 	if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 	$.fn.ModelPreview = function(o){
@@ -60,32 +9,26 @@ $(function(){
 	    var container = self.options.container,
 	    	scene,cameraTarget, camera, plane, renderer, stats;
 	    jQuery.extend(self.options, o);
-	    var camera, cameraTarget, light, scene, renderer, mesh, controls, center, dae, 
-	    	animations,
-	    	kfAnimations = [], 
-	    	kfAnimationsLength = 0, 
-	    	model,
-	    	lastTimestamp,
-	    	progress = 0,
-	    	animateTag = true;
+	    var camera, cameraTarget, light, scene, renderer, mesh, controls, center;
+		var particleLight, pointLight;
+		var model, skin, collada;
 	    loadDAE(self.options.stlUrl);
 		//bindEvent();
 		function loadDAE(path){
 	    	var loader = new THREE.ColladaLoader();
 			loader.options.convertUpAxis = true;
-			loader.load(path, function ( collada ) {
-				model = collada.scene;
-				animations = collada.animations;
-				kfAnimationsLength = animations.length;
-				model.scale.x = model.scale.y = model.scale.z = 0.125; // 1/8 scale, modeled in cm
+			loader.load(path, function (daeData) {
+				collada = daeData;
+				model = daeData.scene;
+				skin = daeData.skins[ 0 ];
+				model.updateMatrix();
 				init();
-				start();
-				animate( lastTimestamp );
-				//dae.scale.x = dae.scale.y = dae.scale.z = 0.002;
-				
-				model.traverse(function(n){
-					//tools.log(n);
-				});
+				animate();
+				bindEvent();
+				//setCenter();
+				tools.log(model);
+				dae.scale.x = dae.scale.y = dae.scale.z = 0.002;
+			
 				//init();
 				//animate();
 
@@ -96,9 +39,8 @@ $(function(){
 			camera.position.z=100;
 			camera.position.x=-0;
 			camera.position.y=-0;*/
-			camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 0.01, 1000 );
-			camera.position.set( -5.00181875, 3.42631375, 11.3102925 );
-			camera.lookAt( new THREE.Vector3( -1.224774125, 2.18410625, 4.57969125 ) );
+			camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
+			camera.position.set( 2, 2, 100 );
 			/*camera = new THREE.PerspectiveCamera( 35, window.innerWidth / window.innerHeight, 1, 15 );
 			camera.position.set( 3, 400, 800 );
 			cameraTarget = new THREE.Vector3( 0, -0.25, 0 );*/
@@ -106,20 +48,6 @@ $(function(){
 			scene = new THREE.Scene();
 			//scene.fog = new THREE.Fog( 0x72645b, 2, 15 );
 
-			// KeyFrame Animations
-
-			var animHandler = THREE.AnimationHandler;
-
-			for ( var i = 0; i < kfAnimationsLength; ++i ) {
-
-				var animation = animations[ i ];
-				animHandler.add( animation );
-
-				var kfAnimation = new THREE.KeyFrameAnimation( animation.node, animation.name );
-				kfAnimation.timeScale = 1;
-				kfAnimations.push( kfAnimation );
-
-			}
 			// Grid
 
 			var material = new THREE.LineBasicMaterial( { color: 0x303030 } );
@@ -136,7 +64,7 @@ $(function(){
 			}
 
 			var line = new THREE.Line( geometry, material, THREE.LinePieces );
-			scene.add( line );
+			//scene.add( line );
 			// Add the COLLADA
 
 			//model.getChildByName( 'camEye_camera', true ).visible = false;
@@ -144,13 +72,9 @@ $(function(){
 
 			scene.add( model );
 			// Lights
-			pointLight = new THREE.PointLight( 0xffffff, 1.75 );
-			pointLight.position = camera.position;
-			pointLight.rotation = camera.rotation;
-			pointLight.scale = camera.scale;
-			/*light = new THREE.AmbientLight(0xf2f2f2);
+			light = new THREE.AmbientLight(0xf2f2f2);
 			light.position.set( 0, 0, 0 );
-			scene.add( light );*/
+			scene.add( light );
 
 			// renderer
 			renderer = new THREE.WebGLRenderer( { antialias: true, alpha: false } );
@@ -199,11 +123,12 @@ $(function(){
 	    function bindEvent(){
 	    	window.addEventListener( 'resize', onWindowResize, false );
 	    	//controls = new THREE.EditorControls(camera,self.options.container[0]);
-	    	controls = new THREE.TrackballControls( camera,self.options.container[0] );
+	    	controls = new THREE.EditorControls( camera,self.options.container[0] );
 			controls.addEventListener('change',render);
 	    }
-	    function setCenter(geometry){
-	    	var box = geometry.boundingBox,
+	    function setCenter(){
+	    	//stl代码
+	    	/*var box = geometry.boundingBox,
 	    		position = camera.position,
 			    offset = position.clone(),
 			    min = new THREE.Vector3( box.min.x, box.min.y, box.min.z),
@@ -217,7 +142,37 @@ $(function(){
 			tools.log(distance);
 			camera.position.z = distance*1.5;
 			camera.lookAt(center);
-			animate();
+			animate();*/
+			//dae代码
+			var minX = 100;
+			var minY = 100;
+			var minZ = 100;
+			var maxX = 0;
+			var maxY = 0;
+			var maxZ = 0;
+			var geometries = collada.dae.geometries;               
+			for(var propName in geometries){
+				if(geometries.hasOwnProperty(propName) && geometries[propName].mesh){
+				    var geometry = geometries[propName].mesh.geometry3js;
+				    geometry.computeBoundingBox();
+				    bBox = geometry.boundingBox;
+				    if(bBox.min.x < minX) minX = bBox.min.x;
+				    if(bBox.min.y < minY) minY = bBox.min.x;
+				    if(bBox.min.z < minZ) minZ = bBox.min.z;
+				    if(bBox.max.x > maxX) maxX = bBox.max.x;
+				    if(bBox.max.y > maxY) maxY = bBox.max.x;
+				    if(bBox.max.z > maxZ) maxZ = bBox.max.z;
+				}
+			}
+			var min = new THREE.Vector3( minX, minY, minZ),
+				max = new THREE.Vector3( maxX, maxY, maxZ),
+				distance = max.distanceTo(min);
+				center = new THREE.Vector3((maxX+minX)/2, (maxY+minY)/2, (maxZ+minZ)/2);
+			tools.log(min);
+			tools.log(max);
+			tools.log(distance);
+			camera.position.z = distance*model.scale.x;
+			camera.lookAt(center);
 	    }
 
 		function onWindowResize() {
@@ -226,76 +181,44 @@ $(function(){
 			renderer.setSize( window.innerWidth, window.innerHeight );
 		}
 
-		function start() {
-
-			for ( var i = 0; i < kfAnimationsLength; ++i ) {
-
-				var animation = kfAnimations[i];
-
-				for ( var h = 0, hl = animation.hierarchy.length; h < hl; h++ ) {
-
-					var keys = animation.data.hierarchy[ h ].keys;
-					var sids = animation.data.hierarchy[ h ].sids;
-					var obj = animation.hierarchy[ h ];
-
-					if ( keys.length && sids ) {
-
-						for ( var s = 0; s < sids.length; s++ ) {
-
-							var sid = sids[ s ];
-							var next = animation.getNextKeyWith( sid, h, 0 );
-
-							if ( next ) next.apply( sid );
-
-						}
-
-						obj.matrixAutoUpdate = false;
-						animation.data.hierarchy[ h ].node.updateMatrix();
-						obj.matrixWorldNeedsUpdate = true;
-
-					}
-
-				}
-
-				animation.play( false, 0 );
-				lastTimestamp = Date.now();
-
-			}
-
-		}
+		var t = 0;
+		var clock = new THREE.Clock();
 
 		function animate() {
 
-			var timestamp = Date.now();
-			var frameTime = ( timestamp - lastTimestamp ) * 0.001; // seconds
+			var delta = clock.getDelta();
 
-			if ( progress >= 0 && progress < 48 ) {
+			requestAnimationFrame( animate );
 
-				for ( var i = 0; i < kfAnimationsLength; ++i ) {
+			if ( t > 1 ) t = 0;
+			if ( skin ) {
 
-					kfAnimations[ i ].update( frameTime );
+				// guess this can be done smarter...
+
+				// (Indeed, there are way more frames than needed and interpolation is not used at all
+				//  could be something like - one morph per each skinning pose keyframe, or even less,
+				//  animation could be resampled, morphing interpolation handles sparse keyframes quite well.
+				//  Simple animation cycles like this look ok with 10-15 frames instead of 100 ;)
+
+				for ( var i = 0; i < skin.morphTargetInfluences.length; i++ ) {
+
+					skin.morphTargetInfluences[ i ] = 0;
 
 				}
 
-			} else if ( progress >= 48 ) {
+				skin.morphTargetInfluences[ Math.floor( t * 30 ) ] = 1;
 
-				for ( var i = 0; i < kfAnimationsLength; ++i ) {
-
-					kfAnimations[ i ].stop();
-
-				}
-
-				progress = 0;
-				start();
+				t += delta;
 
 			}
 
-			progress += frameTime;
-			lastTimestamp = timestamp;
-			renderer.render( scene, camera );
+			render();
 			stats.update();
-			requestAnimationFrame( animate );
 
+		}
+
+		function render() {
+			renderer.render( scene, camera );
 		}
 		container.dblclick (function(){
 			camera.lookAt(center);
