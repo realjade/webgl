@@ -1,6 +1,6 @@
 
 $(function() {
-	$('#svgbasics').svg({onLoad: drawInitial,loadURL: '/static/svg/test.svg'});
+	$('#svgbasics').svg({onLoad: drawInitial,loadURL: '/static/svg/radial.svg'});
 	$('#rect,#line,#circle,#ellipse').click(drawShape);
 	$('#clear').click(function() {
 		$('#svgbasics').svg('get').clear();
